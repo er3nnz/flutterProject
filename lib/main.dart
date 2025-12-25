@@ -1,5 +1,5 @@
+import 'package:ders_project/screens/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:ders_project/pages/login_page.dart';
 import 'package:ders_project/db/database_helper.dart';
 import 'package:ders_project/services/auth_service.dart';
 
@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      home: const LoginScreen(),
     );
   }
 }

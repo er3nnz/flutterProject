@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ders_project/db/database_helper.dart';
 import 'package:ders_project/models/user.dart';
-import 'users_page.dart';
-import 'audit_logs_page.dart';
+import 'users_page_screen.dart';
+import 'audit_logs_screeen.dart';
 
 class AdminDashboard extends StatefulWidget {
   final User currentUser;
