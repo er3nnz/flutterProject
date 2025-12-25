@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ders_project/db/database_helper.dart';
 import 'package:ders_project/models/user.dart';
 import 'users_page_screen.dart';
-import 'audit_logs_screeen.dart';
+import 'audit_logs_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   final User currentUser;
@@ -41,7 +41,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             const SizedBox(height: 12),
             ElevatedButton(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => UsersPage(currentUser: widget.currentUser))), child: const Text('Kullanıcı Yönetimi')),
             const SizedBox(height: 8),
-            ElevatedButton(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AuditLogsPage())), child: const Text('Audit Logları')),
+            ElevatedButton(onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AuditLogsScreen())), child: const Text('Audit Logları')),
             const SizedBox(height: 16),
             const Text('Sistem Metrikleri', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
