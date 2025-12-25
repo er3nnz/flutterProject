@@ -67,7 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (!formKey.currentState!.validate()) return;
               final newUsername = usernameController.text.trim();
               try {
-                // ensure not taken by another user
                 final check = await db.getUserByUsername(newUsername);
                 if (check != null && check.id != _currentUser?.id) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bu kullanıcı adı zaten kullanılıyor')));
@@ -101,7 +100,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (result == true) _loadUserProfile();
   }
 
-  // New: Change password dialog
   Future<void> _showChangePasswordDialog() async {
     final db = DatabaseHelper.instance;
     final currentController = TextEditingController();
@@ -152,7 +150,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
 
               try {
-                // verify current password
                 final auth = await db.authenticateUser(username: _currentUser!.username, password: currentController.text);
                 if (auth == null) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mevcut parola yanlış')));
@@ -243,7 +240,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  // Profile Header
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
@@ -312,7 +308,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // User Information
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -354,7 +349,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Actions
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -416,7 +410,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Logout Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(

@@ -95,7 +95,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Welcome Card
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
@@ -165,7 +164,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Statistics Cards
                     Text(
                       'İstatistikler',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -208,7 +206,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    // Quick Actions
                     Text(
                       'Hızlı Erişim',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -277,7 +274,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Features Section
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(

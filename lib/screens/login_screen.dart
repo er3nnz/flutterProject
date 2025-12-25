@@ -40,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kullanıcı adı veya parola yanlış')));
       } else {
-        // Persist session
         await AuthService.instance.setCurrentUser(user);
 
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Giriş başarılı')));
