@@ -7,6 +7,8 @@ import 'package:ders_project/screens/inventory_screen.dart';
 import 'package:ders_project/screens/locations_screen.dart';
 import 'package:ders_project/screens/transactions_screen.dart';
 import 'package:ders_project/screens/profile_screen.dart';
+import 'package:ders_project/screens/users_management_screen.dart';
+import 'package:ders_project/screens/audit_logs_screen.dart';
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -19,6 +21,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _productCount = 0;
   int _locationCount = 0;
   int _lowStockCount = 0;
+  int _userCount = 0;
+  int _logCount = 0;
   bool _isLoading = true;
   @override
   void initState() {
@@ -33,6 +37,9 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     try {
       final products = await DatabaseHelper.instance.getProducts();
       final locations = await DatabaseHelper.instance.getLocations();
+      final users = await DatabaseHelper.instance.getAllUsers();
+      // Get total log count efficiently
+      final metrics = await DatabaseHelper.instance.getMetrics();
       
       int lowStock = 0;
       for (var productMap in products) {
@@ -51,6 +58,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         _productCount = products.length;
         _locationCount = locations.length;
         _lowStockCount = lowStock;
+        _userCount = users.length;
+        _logCount = metrics['audit_logs'] ?? 0;
         _isLoading = false;
       });
     } catch (e) {
@@ -212,11 +221,35 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildStatCard(
+                            'Düşük Stoklu Ürünler',
+                            _lowStockCount.toString(),
+                            Icons.warning_rounded,
+                            Colors.orange,
+                            context,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildStatCard(
+                            'Kullanıcılar',
+                            _userCount.toString(),
+                            Icons.people_rounded,
+                            Colors.purple,
+                            context,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
                     _buildStatCard(
-                      'Düşük Stoklu Ürünler',
-                      _lowStockCount.toString(),
-                      Icons.warning_rounded,
-                      Colors.orange,
+                      'Audit Logları',
+                      _logCount > 0 ? '${_logCount}+' : '0',
+                      Icons.description_rounded,
+                      Colors.teal,
                       context,
                       fullWidth: true,
                     ),
@@ -286,6 +319,32 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             await Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const TransactionsScreen()),
+                            );
+                            if (mounted) _loadStatistics();
+                          },
+                          context,
+                        ),
+                        _buildQuickActionCard(
+                          'Kullanıcılar',
+                          Icons.people_rounded,
+                          Colors.indigo,
+                          () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const UsersManagementScreen()),
+                            );
+                            if (mounted) _loadStatistics();
+                          },
+                          context,
+                        ),
+                        _buildQuickActionCard(
+                          'Audit Logları',
+                          Icons.description_rounded,
+                          Colors.teal,
+                          () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AuditLogsScreen()),
                             );
                             if (mounted) _loadStatistics();
                           },
