@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ders_project/db/database_helper.dart';
+import 'package:ders_project/services/auth_service.dart';
 import 'package:ders_project/screens/admin_home_screen.dart';
 import 'package:ders_project/screens/user_home_screen.dart';
 import 'package:ders_project/screens/login_screen.dart';
@@ -36,6 +37,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       final user = await db.getUserByUsername(_usernameController.text.trim());
+
+      if (user != null) {
+        await AuthService.instance.setCurrentUser(user);
+      }
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kayıt başarılı')));
 
@@ -59,7 +65,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [theme.colorScheme.primary.withOpacity(0.08), Colors.white],
+            colors: [theme.colorScheme.primary.withValues(alpha: 0.08), Colors.white],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),

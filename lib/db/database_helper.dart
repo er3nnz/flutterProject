@@ -422,6 +422,25 @@ class DatabaseHelper {
     return User.fromMap(rows.first);
   }
 
+  Future<User?> getUserById(int id) async {
+    final db = await instance.database;
+    final rows = await db.query('users', where: 'id = ?', whereArgs: [id], limit: 1);
+    if (rows.isEmpty) return null;
+    return User.fromMap(rows.first);
+  }
+
+  Future<int> updateUsername(int userId, String newUsername) async {
+    final db = await instance.database;
+    return await db.update('users', {'username': newUsername}, where: 'id = ?', whereArgs: [userId]);
+  }
+
+  Future<int> changePassword({required int userId, required String newPassword}) async {
+    final db = await instance.database;
+    final salt = _generateSalt();
+    final hash = _hashPassword(newPassword, salt);
+    return await db.update('users', {'password_hash': hash, 'salt': salt}, where: 'id = ?', whereArgs: [userId]);
+  }
+
   Future<List<User>> getAllUsers() async {
     final db = await instance.database;
     final rows = await db.query('users', orderBy: 'id DESC');
