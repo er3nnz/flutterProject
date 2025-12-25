@@ -20,12 +20,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   int _locationCount = 0;
   int _lowStockCount = 0;
   bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
     _loadStatistics();
   }
+
 
   Future<void> _loadStatistics() async {
     setState(() => _isLoading = true);
@@ -83,11 +83,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.person_rounded),
-            onPressed: () {
-              Navigator.push(
+            onPressed: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ProfileScreen()),
               );
+              if (mounted) _loadStatistics();
             },
             tooltip: 'Profil',
           ),
@@ -149,7 +150,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               ),
                               const SizedBox(width: 16),
                               Expanded(
-                                child: Column(
+        child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     const Text(
@@ -188,7 +189,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     ),
                     const SizedBox(height: 16),
                     Row(
-                      children: [
+          children: [
                         Expanded(
                           child: _buildStatCard(
                             'Ürünler',
@@ -210,7 +211,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+            const SizedBox(height: 12),
                     _buildStatCard(
                       'Düşük Stoklu Ürünler',
                       _lowStockCount.toString(),
@@ -242,11 +243,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           'Ürünler',
                           Icons.shopping_bag_rounded,
                           Colors.blue,
-                          () {
-                            Navigator.push(
+                          () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const ProductsScreen()),
                             );
+                            if (mounted) _loadStatistics();
                           },
                           context,
                         ),
@@ -254,11 +256,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           'Stok',
                           Icons.warehouse_rounded,
                           Colors.green,
-                          () {
-                            Navigator.push(
+                          () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const InventoryScreen()),
                             );
+                            if (mounted) _loadStatistics();
                           },
                           context,
                         ),
@@ -266,11 +269,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           'Lokasyonlar',
                           Icons.location_on_rounded,
                           Colors.orange,
-                          () {
-                            Navigator.push(
+                          () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const LocationsScreen()),
                             );
+                            if (mounted) _loadStatistics();
                           },
                           context,
                         ),
@@ -278,11 +282,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           'Hareketler',
                           Icons.swap_horiz_rounded,
                           Colors.purple,
-                          () {
-                            Navigator.push(
+                          () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => const TransactionsScreen()),
                             );
+                            if (mounted) _loadStatistics();
                           },
                           context,
                         ),
