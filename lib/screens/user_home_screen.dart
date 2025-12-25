@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
-import '../db/database_helper.dart';
-import '../models/product.dart';
-import 'products_screen.dart';
-import 'inventory_screen.dart';
-import 'locations_screen.dart';
-import 'transactions_screen.dart';
-import 'profile_screen.dart';
+import 'package:ders_project/screens/login_screen.dart';
+import 'package:ders_project/db/database_helper.dart';
+import 'package:ders_project/models/product.dart';
+import 'package:ders_project/screens/products_screen.dart';
+import 'package:ders_project/screens/inventory_screen.dart';
+import 'package:ders_project/screens/locations_screen.dart';
+import 'package:ders_project/screens/transactions_screen.dart';
+import 'package:ders_project/screens/profile_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class UserHomeScreen extends StatefulWidget {
+  const UserHomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<UserHomeScreen> createState() => _UserHomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _UserHomeScreenState extends State<UserHomeScreen> {
   int _productCount = 0;
   int _locationCount = 0;
   int _lowStockCount = 0;
@@ -57,6 +58,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _logout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         elevation: 0,
         title: const Text(
-          'Stok Yönetim Sistemi',
+          'Kullanıcı Paneli',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -82,6 +90,11 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             tooltip: 'Profil',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded),
+            onPressed: _logout,
+            tooltip: 'Çıkış Yap',
           ),
         ],
       ),
@@ -102,8 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                            Theme.of(context).colorScheme.secondary,
+                            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
                           ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -111,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                            color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -129,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
-                                  Icons.inventory_2_rounded,
+                                  Icons.person_rounded,
                                   color: Colors.white,
                                   size: 32,
                                 ),
@@ -139,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
+                                    const Text(
                                       'Hoş Geldiniz!',
                                       style: TextStyle(
                                         color: Colors.white,
@@ -298,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Icon(
                                 Icons.info_outline_rounded,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Theme.of(context).colorScheme.secondary,
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -354,10 +367,10 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+          child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.secondary),
         ),
         const SizedBox(width: 12),
         Expanded(

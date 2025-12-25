@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
-import '../db/database_helper.dart';
-import '../models/product.dart';
-import 'products_screen.dart';
-import 'inventory_screen.dart';
-import 'locations_screen.dart';
-import 'transactions_screen.dart';
-import 'profile_screen.dart';
+import 'package:ders_project/screens/login_screen.dart';
+import 'package:ders_project/db/database_helper.dart';
+import 'package:ders_project/models/product.dart';
+import 'package:ders_project/screens/products_screen.dart';
+import 'package:ders_project/screens/inventory_screen.dart';
+import 'package:ders_project/screens/locations_screen.dart';
+import 'package:ders_project/screens/transactions_screen.dart';
+import 'package:ders_project/screens/profile_screen.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class AdminHomeScreen extends StatefulWidget {
+  const AdminHomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _productCount = 0;
   int _locationCount = 0;
   int _lowStockCount = 0;
@@ -57,6 +58,13 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _logout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         elevation: 0,
         title: const Text(
-          'Stok Yönetim Sistemi',
+          'Admin Paneli',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -82,6 +90,11 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             tooltip: 'Profil',
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout_rounded),
+            onPressed: _logout,
+            tooltip: 'Çıkış Yap',
           ),
         ],
       ),
@@ -129,7 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: const Icon(
-                                  Icons.inventory_2_rounded,
+                                  Icons.admin_panel_settings_rounded,
                                   color: Colors.white,
                                   size: 32,
                                 ),
@@ -139,8 +152,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'Hoş Geldiniz!',
+                                    const Text(
+                                      'Admin Paneli',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 24,
