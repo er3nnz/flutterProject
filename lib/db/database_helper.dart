@@ -476,12 +476,14 @@ class DatabaseHelper {
     final locationsCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM location')) ?? 0;
     final inventoryRowsCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM inventory')) ?? 0;
     final transactionsCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM inventory_transaction')) ?? 0;
+    final auditLogsCount = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM audit_log')) ?? 0;
     return {
       'users': usersCount,
       'products': productsCount,
       'locations': locationsCount,
       'inventory_rows': inventoryRowsCount,
       'transactions': transactionsCount,
+      'audit_logs': auditLogsCount,
     };
   }
 
