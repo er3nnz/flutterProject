@@ -363,7 +363,6 @@ class _ProductsScreenState extends State<ProductsScreen> {
       ),
       body: Column(
         children: [
-          // Search Bar
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.white,

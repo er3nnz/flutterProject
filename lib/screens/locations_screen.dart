@@ -65,7 +65,6 @@ class _LocationsScreenState extends State<LocationsScreen> {
 
     if (confirm == true && location.id != null) {
       try {
-        // TODO: Implement deleteLocation in DatabaseHelper
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -269,7 +268,6 @@ class _LocationsScreenState extends State<LocationsScreen> {
       ),
       body: Column(
         children: [
-          // Search Bar
           Container(
             padding: const EdgeInsets.all(16),
             color: Colors.white,
