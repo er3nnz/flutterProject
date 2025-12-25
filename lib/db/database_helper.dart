@@ -22,7 +22,86 @@ class DatabaseHelper {
   Future<Database> _initDB(String fileName) async {
     final documentsDirectory = await getApplicationDocumentsDirectory();
     final path = join(documentsDirectory.path, fileName);
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(path, version: 1, onCreate: _createDB, onOpen: (db) async {
+      await _ensureSchema(db);
+    });
+  }
+
+  Future<void> _ensureSchema(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        role TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS items(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        createdAt TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS product(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sku TEXT UNIQUE,
+        name TEXT NOT NULL,
+        description TEXT,
+        unit TEXT NOT NULL,
+        barcode TEXT UNIQUE,
+        reorder_level INTEGER DEFAULT 0,
+        cost_price REAL,
+        sale_price REAL,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS location(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        code TEXT UNIQUE,
+        notes TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS inventory(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        location_id INTEGER NOT NULL,
+        quantity REAL NOT NULL DEFAULT 0,
+        reserved_quantity REAL DEFAULT 0,
+        last_counted_at TEXT,
+        UNIQUE(product_id, location_id)
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS inventory_transaction(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        location_from_id INTEGER,
+        location_to_id INTEGER,
+        quantity REAL NOT NULL,
+        type TEXT NOT NULL,
+        reference TEXT,
+        note TEXT,
+        created_by INTEGER,
+        created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_product_name ON product(name);');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_inventory_product ON inventory(product_id);');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_invtrans_product ON inventory_transaction(product_id);');
   }
 
   Future _createDB(Database db, int version) async {
