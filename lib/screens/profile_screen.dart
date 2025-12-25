@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
+import 'package:ders_project/models/user.dart';
+import 'package:ders_project/services/auth_service.dart';
+import 'package:ders_project/screens/login_screen.dart';
+import 'package:ders_project/db/database_helper.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -11,20 +14,167 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   User? _currentUser;
   bool _isLoading = true;
+  late VoidCallback _authListener;
 
   @override
   void initState() {
     super.initState();
+    _authListener = () {
+      setState(() {
+        _currentUser = AuthService.instance.currentUser.value;
+      });
+    };
+    AuthService.instance.currentUser.addListener(_authListener);
     _loadUserProfile();
+  }
+
+  @override
+  void dispose() {
+    AuthService.instance.currentUser.removeListener(_authListener);
+    super.dispose();
   }
 
   Future<void> _loadUserProfile() async {
     setState(() => _isLoading = true);
-    // TODO: Get current logged in user from auth state
-    // For now, we'll show a placeholder
+    final user = await AuthService.instance.getCurrentUser();
     setState(() {
+      _currentUser = user;
       _isLoading = false;
     });
+  }
+
+  // New: Edit profile (username)
+  Future<void> _showEditProfileDialog() async {
+    final db = DatabaseHelper.instance;
+    final usernameController = TextEditingController(text: _currentUser?.username ?? '');
+    final formKey = GlobalKey<FormState>();
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Profil Bilgilerini Düzenle'),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: usernameController,
+            decoration: const InputDecoration(labelText: 'Kullanıcı adı'),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Kullanıcı adı gerekli' : null,
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('İptal')),
+          TextButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              final newUsername = usernameController.text.trim();
+              try {
+                // ensure not taken by another user
+                final check = await db.getUserByUsername(newUsername);
+                if (check != null && check.id != _currentUser?.id) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Bu kullanıcı adı zaten kullanılıyor')));
+                  return;
+                }
+
+                if (_currentUser?.id == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kullanıcı bilgisi bulunamadı')));
+                  return;
+                }
+
+                await db.updateUsername(_currentUser!.id!, newUsername);
+                final updated = await db.getUserById(_currentUser!.id!);
+                if (updated != null) {
+                  await AuthService.instance.setCurrentUser(updated);
+                }
+
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kullanıcı adı güncellendi')));
+                Navigator.pop(context, true);
+              } catch (e) {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Güncelleme başarısız: ${e.toString()}')));
+              }
+            },
+            child: const Text('Kaydet'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) _loadUserProfile();
+  }
+
+  // New: Change password dialog
+  Future<void> _showChangePasswordDialog() async {
+    final db = DatabaseHelper.instance;
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Şifre Değiştir'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: currentController,
+                decoration: const InputDecoration(labelText: 'Mevcut Parola'),
+                obscureText: true,
+                validator: (v) => (v == null || v.isEmpty) ? 'Mevcut parola gerekli' : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: newController,
+                decoration: const InputDecoration(labelText: 'Yeni Parola'),
+                obscureText: true,
+                validator: (v) => (v == null || v.length < 4) ? 'Yeni parola en az 4 karakter olmalı' : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: confirmController,
+                decoration: const InputDecoration(labelText: 'Yeni Parola (Tekrar)'),
+                obscureText: true,
+                validator: (v) => (v != newController.text) ? 'Parolalar eşleşmiyor' : null,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('İptal')),
+          TextButton(
+            onPressed: () async {
+              if (!formKey.currentState!.validate()) return;
+              if (_currentUser == null || _currentUser!.id == null) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kullanıcı bilgisi bulunamadı')));
+                return;
+              }
+
+              try {
+                // verify current password
+                final auth = await db.authenticateUser(username: _currentUser!.username, password: currentController.text);
+                if (auth == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mevcut parola yanlış')));
+                  return;
+                }
+
+                await db.changePassword(userId: _currentUser!.id!, newPassword: newController.text);
+
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Parola başarıyla değiştirildi')));
+                Navigator.pop(context, true);
+              } catch (e) {
+                if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Şifre değiştirilemedi: ${e.toString()}')));
+              }
+            },
+            child: const Text('Değiştir'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) _loadUserProfile();
   }
 
   void _showLogoutDialog() {
@@ -40,9 +190,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: const Text('İptal'),
           ),
           TextButton(
-            onPressed: () {
-              // TODO: Implement logout functionality
+            onPressed: () async {
               Navigator.pop(context);
+              await AuthService.instance.clear();
+              if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Çıkış yapıldı'),
@@ -50,8 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   behavior: SnackBarBehavior.floating,
                 ),
               );
-              // Navigate to login screen
-              // Navigator.pushReplacementNamed(context, '/login');
+              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Çıkış Yap'),
@@ -75,7 +225,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             icon: const Icon(Icons.settings_rounded),
             onPressed: () {
-              // TODO: Navigate to settings
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Ayarlar yakında eklenecek'),
@@ -101,7 +250,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       gradient: LinearGradient(
                         colors: [
                           Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                          Theme.of(context).colorScheme.primary.withOpacity(0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -109,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -146,7 +295,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -170,7 +319,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -196,7 +345,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           _buildInfoTile(
                             Icons.calendar_today_outlined,
                             'Kayıt Tarihi',
-                            _currentUser!.createdAt.toString().substring(0, 10),
+                            _currentUser!.createdAt!.toIso8601String().substring(0, 10),
                             Colors.green,
                           ),
                         ],
@@ -212,7 +361,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 5),
                         ),
@@ -225,13 +374,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'Profil Bilgilerini Düzenle',
                           Colors.blue,
                           () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Profil düzenleme yakında eklenecek'),
-                                backgroundColor: Colors.orange,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            _showEditProfileDialog();
                           },
                         ),
                         const Divider(height: 1),
@@ -240,13 +383,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'Şifre Değiştir',
                           Colors.orange,
                           () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Şifre değiştirme yakında eklenecek'),
-                                backgroundColor: Colors.orange,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            _showChangePasswordDialog();
                           },
                         ),
                         const Divider(height: 1),
@@ -308,7 +445,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: color, size: 20),
@@ -336,7 +473,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: color, size: 20),

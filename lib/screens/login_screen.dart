@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ders_project/db/database_helper.dart';
+import 'package:ders_project/services/auth_service.dart';
 import 'package:ders_project/screens/register_screen.dart';
 import 'package:ders_project/screens/admin_home_screen.dart';
 import 'package:ders_project/screens/user_home_screen.dart';
@@ -39,6 +40,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (user == null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kullanıcı adı veya parola yanlış')));
       } else {
+        // Persist session
+        await AuthService.instance.setCurrentUser(user);
+
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Giriş başarılı')));
         if (user.role == 'admin') {
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const AdminHomeScreen()));
@@ -61,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.white, theme.colorScheme.primary.withOpacity(0.06)],
+            colors: [Colors.white, theme.colorScheme.primary.withValues(alpha: 0.06)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),

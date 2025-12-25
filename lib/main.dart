@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:ders_project/screens/login_screen.dart';
 import 'package:ders_project/db/database_helper.dart';
+import 'package:ders_project/services/auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _seedAdminIfMissing();
+  await AuthService.instance.init();
   runApp(const MyApp());
 }
 
@@ -19,7 +21,6 @@ Future<void> _seedAdminIfMissing() async {
     final existing = await db.getUserByUsername(adminUsername);
     if (existing == null) {
       await db.registerUser(username: adminUsername, password: adminPassword, role: 'admin');
-      print('Seeded default admin user: $adminUsername');
     } else {
       print('Admin user already exists');
     }
